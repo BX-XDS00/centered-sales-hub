@@ -14,6 +14,14 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+type LoginRole = "user" | "admin" | "super_admin";
+
+const ROLE_OPTIONS: { value: LoginRole; label: string }[] = [
+  { value: "user", label: "User" },
+  { value: "admin", label: "Admin" },
+  { value: "super_admin", label: "Super Admin" },
+];
+
 function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -21,6 +29,7 @@ function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loginRole, setLoginRole] = useState<LoginRole>("user");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,14 +37,30 @@ function LoginPage() {
     });
   }, [router]);
 
+  const verifyRole = async (userId: string, expected: LoginRole) => {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    const roles = (data ?? []).map((r) => r.role as LoginRole);
+    if (expected === "user") return true; // any signed-in user can sign in as "user"
+    return roles.includes(expected);
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    const ok = data.user ? await verifyRole(data.user.id, loginRole) : false;
+    if (!ok) {
+      await supabase.auth.signOut();
+      setLoading(false);
+      return toast.error(`This account does not have ${loginRole.replace("_", " ")} access.`);
+    }
     setLoading(false);
-    if (error) return toast.error(error.message);
     toast.success("Signed in");
-    router.navigate({ to: "/dashboard" });
+    router.navigate({ to: loginRole === "user" ? "/dashboard" : loginRole === "admin" ? "/admin" : "/super-admin" });
   };
 
   const onGoogle = async () => {
@@ -44,6 +69,7 @@ function LoginPage() {
     if (result.redirected) return;
     router.navigate({ to: "/dashboard" });
   };
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md border-border/70 shadow-[var(--shadow-elevated)]">
@@ -54,6 +80,25 @@ function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col items-center gap-4">
+            <div className="w-full space-y-1.5">
+              <Label>Sign in as</Label>
+              <div className="grid grid-cols-3 gap-2 rounded-lg border border-border/70 p-1">
+                {ROLE_OPTIONS.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setLoginRole(r.value)}
+                    className={`rounded-md px-2 py-1.5 text-xs font-medium transition ${
+                      loginRole === r.value
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="w-full space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
