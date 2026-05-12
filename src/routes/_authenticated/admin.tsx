@@ -236,7 +236,15 @@ function AdminPage() {
                         </Button>
                         <Select
                           value={m.role}
-                          onValueChange={(v) => setRoleFor(m, v)}
+                          onValueChange={(v) => {
+                            if (v === m.role) return;
+                            askConfirm({
+                              title: "Change role?",
+                              description: `Change ${m.full_name ?? "this user"}'s role from ${m.role.replace("_", " ")} to ${v.replace("_", " ")}? This updates their access immediately.`,
+                              confirmLabel: "Change role",
+                              run: () => setRoleFor(m, v),
+                            });
+                          }}
                           disabled={m.role === "super_admin" || (m.role === "admin" && !isSuper) || m.id === user?.id}
                         >
                           <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
@@ -247,14 +255,29 @@ function AdminPage() {
                           </SelectContent>
                         </Select>
                         {isSuper && m.role === "admin" && (
-                          <Button size="sm" variant="outline" onClick={() => removeAdmin(m)} title="Remove admin">
+                          <Button size="sm" variant="outline" title="Remove admin"
+                            onClick={() => askConfirm({
+                              title: "Remove admin?",
+                              description: `Demote ${m.full_name ?? "this admin"} back to a regular user? They will lose admin access immediately.`,
+                              confirmLabel: "Remove admin",
+                              destructive: true,
+                              run: () => removeAdmin(m),
+                            })}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         )}
                         <Button
                           size="sm"
                           variant={m.blocked ? "outline" : "destructive"}
-                          onClick={() => toggleBlock(m)}
+                          onClick={() => askConfirm({
+                            title: m.blocked ? "Unblock user?" : "Block user?",
+                            description: m.blocked
+                              ? `Restore access for ${m.full_name ?? "this user"}? They will be able to sign in again.`
+                              : `Block ${m.full_name ?? "this user"}? They will be signed out and unable to sign back in.`,
+                            confirmLabel: m.blocked ? "Unblock" : "Block",
+                            destructive: !m.blocked,
+                            run: () => toggleBlock(m),
+                          })}
                           disabled={!manageable}
                         >
                           {m.blocked ? <><CheckCircle2 className="mr-1 h-4 w-4" />Unblock</> : <><Ban className="mr-1 h-4 w-4" />Block</>}
