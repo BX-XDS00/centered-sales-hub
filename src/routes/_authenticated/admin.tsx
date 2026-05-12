@@ -38,6 +38,15 @@ function AdminPage() {
   const [editOpen, setEditOpen] = useState<TeamMember | null>(null);
   const [editName, setEditName] = useState("");
   const [auditLog, setAuditLog] = useState<any[]>([]);
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    description: string;
+    confirmLabel: string;
+    destructive?: boolean;
+    run: () => Promise<void> | void;
+  } | null>(null);
+
+  const askConfirm = (c: NonNullable<typeof confirm>) => setConfirm(c);
 
   const nameOf = (id: string) => members.find((m) => m.id === id)?.full_name ?? id.slice(0, 8);
 
