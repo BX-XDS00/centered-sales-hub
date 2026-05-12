@@ -21,6 +21,7 @@ import {
   YAxis,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -33,6 +34,7 @@ interface Lead {
   status: string;
   value: number;
   assigned_to: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
   company: string | null;
@@ -61,13 +63,15 @@ const COLORS = [
 const TARGET = 100000;
 
 function AnalyticsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const { user, role } = useAuth();
+  const isAdmin = role === "admin" || role === "super_admin";
+  const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
 
   useEffect(() => {
     (async () => {
       const { data: l } = await supabase.from("leads").select("*");
-      setLeads((l ?? []) as Lead[]);
+      setAllLeads((l ?? []) as Lead[]);
       const { data: p } = await supabase.from("profiles").select("id, full_name");
       const map: Record<string, string> = {};
       (p ?? []).forEach((r: { id: string; full_name: string | null }) => {
@@ -76,6 +80,15 @@ function AnalyticsPage() {
       setProfiles(map);
     })();
   }, []);
+
+  const leads = useMemo(() => {
+    if (isAdmin || !user) return allLeads;
+    return allLeads.filter(
+      (l) => l.assigned_to === user.id || l.created_by === user.id,
+    );
+  }, [allLeads, isAdmin, user]);
+
+
 
   const funnelData = useMemo(
     () =>
@@ -208,20 +221,23 @@ function AnalyticsPage() {
           </div>
         </ChartCard>
 
-        <ChartCard
-          title="Revenue by salesperson"
-          description="Compare performance across reps. Identify top and underperformers."
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={repData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
-              <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+        {isAdmin && (
+          <ChartCard
+            title="Revenue by salesperson"
+            description="Compare performance across reps. Identify top and underperformers."
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={repData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+
 
         <ChartCard
           title="Weighted pipeline value"
