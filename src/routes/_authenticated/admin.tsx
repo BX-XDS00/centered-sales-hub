@@ -119,9 +119,11 @@ function AdminPage() {
       return toast.error("You can't change this user's role.");
     }
     if (newRole === "super_admin") return toast.error("Super Admin role can't be assigned here.");
+    const previous = target.role;
     await supabase.from("user_roles").delete().eq("user_id", target.id);
     const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: newRole as any });
     if (error) return toast.error(error.message);
+    await recordAudit(target, "role_change", { from: previous, to: newRole });
     toast.success("Role updated");
     load();
   };
@@ -132,6 +134,7 @@ function AdminPage() {
     await supabase.from("user_roles").delete().eq("user_id", target.id);
     const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: "user" as any });
     if (error) return toast.error(error.message);
+    await recordAudit(target, "admin_removed", { from: "admin", to: "user" });
     toast.success("Admin removed");
     load();
   };
@@ -140,6 +143,7 @@ function AdminPage() {
     if (!canManage(target)) return toast.error("You can't block this user.");
     const { error } = await (supabase.from("profiles").update as any)({ blocked: !target.blocked }).eq("id", target.id);
     if (error) return toast.error(error.message);
+    await recordAudit(target, target.blocked ? "unblock" : "block");
     toast.success(target.blocked ? "User unblocked" : "User blocked");
     load();
   };
