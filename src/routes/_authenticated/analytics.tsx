@@ -221,20 +221,23 @@ function AnalyticsPage() {
           </div>
         </ChartCard>
 
-        <ChartCard
-          title="Revenue by salesperson"
-          description="Compare performance across reps. Identify top and underperformers."
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={repData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
-              <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+        {isAdmin && (
+          <ChartCard
+            title="Revenue by salesperson"
+            description="Compare performance across reps. Identify top and underperformers."
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={repData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+
 
         <ChartCard
           title="Weighted pipeline value"
