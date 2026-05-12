@@ -44,7 +44,7 @@ function LeadDetail() {
   useEffect(() => { load(); }, [id]);
 
   const updateField = async (field: string, value: any) => {
-    const { error } = await supabase.from("leads").update({ [field]: value }).eq("id", id);
+    const { error } = await (supabase.from("leads").update as any)({ [field]: value }).eq("id", id);
     if (error) return toast.error(error.message);
     setLead((p: any) => ({ ...p, [field]: value }));
   };
