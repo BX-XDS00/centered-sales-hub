@@ -1,7 +1,7 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Users, ShieldCheck, Settings2 } from "lucide-react";
+import { LogOut, LayoutDashboard, Users, ShieldCheck, Settings2, UserCircle2 } from "lucide-react";
 
 export function TopNav() {
   const { role, signOut, user } = useAuth();
@@ -29,6 +29,7 @@ export function TopNav() {
           {role === "super_admin" && (
             <NavLink to="/super-admin" icon={<Settings2 className="h-4 w-4" />} label="System" />
           )}
+          <NavLink to="/account" icon={<UserCircle2 className="h-4 w-4" />} label="Account" />
         </nav>
 
         <div className="flex items-center gap-3">
