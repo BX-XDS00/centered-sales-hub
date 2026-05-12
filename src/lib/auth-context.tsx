@@ -34,11 +34,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => fetchRole(s.user.id), 0);
+        const uid = s.user.id;
+        setTimeout(async () => {
+          // Check blocked
+          const { data: prof } = await supabase.from("profiles").select("blocked").eq("id", uid).maybeSingle();
+          if (prof?.blocked) {
+            await supabase.auth.signOut();
+            if (typeof window !== "undefined") {
+              window.location.href = "/login?blocked=1";
+            }
+            return;
+          }
+          fetchRole(uid);
+          if (event === "SIGNED_IN") {
+            supabase.from("login_events").insert({
+              user_id: uid,
+              user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+            });
+          }
+        }, 0);
       } else {
         setRole(null);
       }
