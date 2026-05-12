@@ -35,6 +35,9 @@ function LoginPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.navigate({ to: "/dashboard" });
     });
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("blocked") === "1") {
+      toast.error("Your account has been blocked. Contact an administrator.");
+    }
   }, [router]);
 
   const verifyRole = async (userId: string, expected: LoginRole) => {
@@ -51,6 +54,14 @@ function LoginPage() {
     if (error) {
       setLoading(false);
       return toast.error(error.message);
+    }
+    if (data.user) {
+      const { data: prof } = await supabase.from("profiles").select("blocked").eq("id", data.user.id).maybeSingle();
+      if (prof?.blocked) {
+        await supabase.auth.signOut();
+        setLoading(false);
+        return toast.error("Your account has been blocked. Contact an administrator.");
+      }
     }
     const ok = data.user ? await verifyRole(data.user.id, loginRole) : false;
     if (!ok) {
