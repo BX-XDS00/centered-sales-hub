@@ -83,9 +83,10 @@ function AnalyticsPage() {
   const leads = useMemo(() => {
     if (isAdmin || !user) return allLeads;
     return allLeads.filter(
-      (l) => l.assigned_to === user.id || l.status === "won",
+      (l) => l.assigned_to === user.id || l.created_by === user.id,
     );
   }, [allLeads, isAdmin, user]);
+
 
 
   const funnelData = useMemo(
