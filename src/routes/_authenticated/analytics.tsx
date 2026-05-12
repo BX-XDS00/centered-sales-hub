@@ -34,6 +34,7 @@ interface Lead {
   status: string;
   value: number;
   assigned_to: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
   company: string | null;
