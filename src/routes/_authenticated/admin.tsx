@@ -43,7 +43,7 @@ function AdminPage() {
     description: string;
     confirmLabel: string;
     destructive?: boolean;
-    run: () => Promise<void> | void;
+    run: () => unknown | Promise<unknown>;
   } | null>(null);
 
   const askConfirm = (c: NonNullable<typeof confirm>) => setConfirm(c);
