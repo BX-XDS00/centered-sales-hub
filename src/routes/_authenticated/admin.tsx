@@ -285,6 +285,36 @@ function AdminPage() {
         </div>
       )}
 
+      <div className="mx-auto max-w-5xl">
+        <Card className="border-border/70 shadow-[var(--shadow-card)]">
+          <CardHeader><CardTitle className="text-center font-display">Audit log</CardTitle></CardHeader>
+          <CardContent>
+            {auditLog.length === 0 ? (
+              <EmptyState icon={<History className="h-7 w-7" />} title="No admin actions yet" />
+            ) : (
+              <ul className="divide-y divide-border">
+                {auditLog.map((e) => {
+                  const label =
+                    e.action === "block" ? "Blocked" :
+                    e.action === "unblock" ? "Unblocked" :
+                    e.action === "role_change" ? `Role changed (${e.details?.from ?? "?"} → ${e.details?.to ?? "?"})` :
+                    e.action === "admin_removed" ? "Removed admin" : e.action;
+                  return (
+                    <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{label} — {nameOf(e.target_user_id)}</div>
+                        <div className="text-xs text-muted-foreground">by {nameOf(e.actor_id)}</div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Dialog open={!!historyOpen} onOpenChange={(o) => !o && setHistoryOpen(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Login history — {historyOpen?.full_name ?? "Unnamed"}</DialogTitle></DialogHeader>
