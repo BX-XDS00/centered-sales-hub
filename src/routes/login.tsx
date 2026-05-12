@@ -81,6 +81,25 @@ function LoginPage() {
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col items-center gap-4">
             <div className="w-full space-y-1.5">
+              <Label>Sign in as</Label>
+              <div className="grid grid-cols-3 gap-2 rounded-lg border border-border/70 p-1">
+                {ROLE_OPTIONS.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setLoginRole(r.value)}
+                    className={`rounded-md px-2 py-1.5 text-xs font-medium transition ${
+                      loginRole === r.value
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="w-full space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
             </div>
