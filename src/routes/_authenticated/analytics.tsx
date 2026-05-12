@@ -62,13 +62,15 @@ const COLORS = [
 const TARGET = 100000;
 
 function AnalyticsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const { user, role } = useAuth();
+  const isAdmin = role === "admin" || role === "super_admin";
+  const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
 
   useEffect(() => {
     (async () => {
       const { data: l } = await supabase.from("leads").select("*");
-      setLeads((l ?? []) as Lead[]);
+      setAllLeads((l ?? []) as Lead[]);
       const { data: p } = await supabase.from("profiles").select("id, full_name");
       const map: Record<string, string> = {};
       (p ?? []).forEach((r: { id: string; full_name: string | null }) => {
@@ -77,6 +79,14 @@ function AnalyticsPage() {
       setProfiles(map);
     })();
   }, []);
+
+  const leads = useMemo(() => {
+    if (isAdmin || !user) return allLeads;
+    return allLeads.filter(
+      (l) => l.assigned_to === user.id || l.status === "won",
+    );
+  }, [allLeads, isAdmin, user]);
+
 
   const funnelData = useMemo(
     () =>
