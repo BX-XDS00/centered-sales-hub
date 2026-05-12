@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -37,6 +38,12 @@ function LoginPage() {
     router.navigate({ to: "/dashboard" });
   };
 
+  const onGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (result.error) return toast.error(result.error.message);
+    if (result.redirected) return;
+    router.navigate({ to: "/dashboard" });
+  };
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md border-border/70 shadow-[var(--shadow-elevated)]">
