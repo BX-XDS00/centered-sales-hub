@@ -36,6 +36,27 @@ function AdminPage() {
   const [history, setHistory] = useState<{ created_at: string; user_agent: string | null }[]>([]);
   const [editOpen, setEditOpen] = useState<TeamMember | null>(null);
   const [editName, setEditName] = useState("");
+  const [auditLog, setAuditLog] = useState<any[]>([]);
+
+  const nameOf = (id: string) => members.find((m) => m.id === id)?.full_name ?? id.slice(0, 8);
+
+  const recordAudit = async (target: TeamMember, action: string, details?: any) => {
+    if (!user) return;
+    await (supabase.from("audit_log") as any).insert({
+      actor_id: user.id,
+      target_user_id: target.id,
+      action,
+      details: details ?? null,
+    });
+  };
+
+  const loadAudit = async () => {
+    const { data } = await (supabase.from("audit_log") as any)
+      .select("id, actor_id, target_user_id, action, details, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setAuditLog(data ?? []);
+  };
 
   const load = async () => {
     setLoading(true);
@@ -45,6 +66,7 @@ function AdminPage() {
       supabase.from("leads").select("id, name, status, value, assigned_to"),
       supabase.from("login_events").select("user_id, created_at").order("created_at", { ascending: false }),
     ]);
+    loadAudit();
 
     const roleByUser = new Map<string, "user" | "admin" | "super_admin">();
     (roles ?? []).forEach((r) => {
