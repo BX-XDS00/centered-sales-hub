@@ -172,6 +172,27 @@ export type Database = {
         }
         Relationships: []
       }
+      sales: {
+        Row: {
+          cust_no: string | null
+          emp_no: string | null
+          sales_date: string | null
+          trans_no: string
+        }
+        Insert: {
+          cust_no?: string | null
+          emp_no?: string | null
+          sales_date?: string | null
+          trans_no: string
+        }
+        Update: {
+          cust_no?: string | null
+          emp_no?: string | null
+          sales_date?: string | null
+          trans_no?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
