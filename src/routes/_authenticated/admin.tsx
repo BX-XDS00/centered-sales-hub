@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -29,7 +29,14 @@ interface TeamMember {
 
 function AdminPage() {
   const { role: viewerRole, user } = useAuth();
+  const router = useRouter();
   const isSuper = viewerRole === "super_admin";
+  const isManager = viewerRole === "admin" || viewerRole === "super_admin";
+
+  useEffect(() => {
+    if (viewerRole && !isManager) router.navigate({ to: "/dashboard" });
+  }, [viewerRole, isManager, router]);
+
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [unassigned, setUnassigned] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
