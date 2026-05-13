@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -29,7 +29,14 @@ interface TeamMember {
 
 function AdminPage() {
   const { role: viewerRole, user } = useAuth();
+  const router = useRouter();
   const isSuper = viewerRole === "super_admin";
+  const isManager = viewerRole === "admin" || viewerRole === "super_admin";
+
+  useEffect(() => {
+    if (viewerRole && !isManager) router.navigate({ to: "/dashboard" });
+  }, [viewerRole, isManager, router]);
+
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [unassigned, setUnassigned] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +122,7 @@ function AdminPage() {
     setUnassigned((leads ?? []).filter((l) => !l.assigned_to));
     setLoading(false);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { if (isManager) load(); }, [isManager]);
 
   const canManage = (target: TeamMember) => {
     if (target.id === user?.id) return false;
@@ -190,6 +197,7 @@ function AdminPage() {
     load();
   };
 
+  if (!isManager) return null;
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   const sorted = [...members].sort((a, b) => b.wonValue - a.wonValue);
