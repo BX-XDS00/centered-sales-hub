@@ -197,6 +197,7 @@ function AdminPage() {
     load();
   };
 
+  if (!isManager) return null;
   if (loading) return <div className="grid place-items-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   const sorted = [...members].sort((a, b) => b.wonValue - a.wonValue);
