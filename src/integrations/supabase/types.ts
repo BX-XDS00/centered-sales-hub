@@ -76,6 +76,57 @@ export type Database = {
         }
         Relationships: []
       }
+      customer: {
+        Row: {
+          address: string | null
+          cust_name: string | null
+          cust_no: string
+          payment_terms: string | null
+        }
+        Insert: {
+          address?: string | null
+          cust_name?: string | null
+          cust_no: string
+          payment_terms?: string | null
+        }
+        Update: {
+          address?: string | null
+          cust_name?: string | null
+          cust_no?: string
+          payment_terms?: string | null
+        }
+        Relationships: []
+      }
+      employee: {
+        Row: {
+          birth_date: string | null
+          emp_no: string
+          first_name: string | null
+          gender: string | null
+          hire_date: string | null
+          last_name: string | null
+          termination_date: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          emp_no: string
+          first_name?: string | null
+          gender?: string | null
+          hire_date?: string | null
+          last_name?: string | null
+          termination_date?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          emp_no?: string
+          first_name?: string | null
+          gender?: string | null
+          hire_date?: string | null
+          last_name?: string | null
+          termination_date?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           assigned_to: string | null
