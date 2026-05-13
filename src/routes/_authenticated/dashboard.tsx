@@ -28,6 +28,8 @@ function Dashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [activitiesCount, setActivitiesCount] = useState(0);
   const [usersCount, setUsersCount] = useState(0);
+  const [salesCount, setSalesCount] = useState(0);
+  const [recentSales, setRecentSales] = useState<Array<{ trans_no: string; sales_date: string | null; cust_no: string | null; emp_no: string | null }>>([]);
 
   useEffect(() => {
     (async () => {
@@ -39,6 +41,14 @@ function Dashboard() {
         const { count: u } = await supabase.from("profiles").select("*", { count: "exact", head: true });
         setUsersCount(u ?? 0);
       }
+      const { count: sc } = await supabase.from("sales").select("*", { count: "exact", head: true });
+      setSalesCount(sc ?? 0);
+      const { data: s } = await supabase
+        .from("sales")
+        .select("trans_no,sales_date,cust_no,emp_no")
+        .order("sales_date", { ascending: false })
+        .limit(8);
+      setRecentSales(s ?? []);
     })();
   }, [role]);
 
@@ -116,6 +126,30 @@ function Dashboard() {
                       <Badge variant="outline" className="capitalize">{l.status.replace("_", " ")}</Badge>
                       <span className="text-sm font-semibold">${Number(l.value).toLocaleString()}</span>
                     </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="mx-auto max-w-4xl">
+        <Card className="border-border/70 shadow-[var(--shadow-card)]">
+          <CardHeader>
+            <CardTitle className="font-display">Recent sales ({salesCount.toLocaleString()})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentSales.length === 0 ? (
+              <EmptyState icon={<DollarSign className="h-7 w-7" />} title="No sales yet" description="Sales transactions will appear here." />
+            ) : (
+              <ul className="divide-y divide-border">
+                {recentSales.map((s) => (
+                  <li key={s.trans_no} className="flex items-center justify-between py-2 text-sm">
+                    <span className="font-mono">{s.trans_no}</span>
+                    <span className="text-muted-foreground">{s.sales_date ?? "—"}</span>
+                    <span>Cust {s.cust_no ?? "—"}</span>
+                    <span className="text-muted-foreground">Emp {s.emp_no ?? "—"}</span>
                   </li>
                 ))}
               </ul>
