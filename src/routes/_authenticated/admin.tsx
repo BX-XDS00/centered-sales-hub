@@ -122,7 +122,7 @@ function AdminPage() {
     setUnassigned((leads ?? []).filter((l) => !l.assigned_to));
     setLoading(false);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { if (isManager) load(); }, [isManager]);
 
   const canManage = (target: TeamMember) => {
     if (target.id === user?.id) return false;
