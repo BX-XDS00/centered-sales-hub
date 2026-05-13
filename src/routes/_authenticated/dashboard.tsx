@@ -28,6 +28,8 @@ function Dashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [activitiesCount, setActivitiesCount] = useState(0);
   const [usersCount, setUsersCount] = useState(0);
+  const [salesCount, setSalesCount] = useState(0);
+  const [recentSales, setRecentSales] = useState<Array<{ trans_no: string; sales_date: string | null; cust_no: string | null; emp_no: string | null }>>([]);
 
   useEffect(() => {
     (async () => {
@@ -39,6 +41,14 @@ function Dashboard() {
         const { count: u } = await supabase.from("profiles").select("*", { count: "exact", head: true });
         setUsersCount(u ?? 0);
       }
+      const { count: sc } = await supabase.from("sales").select("*", { count: "exact", head: true });
+      setSalesCount(sc ?? 0);
+      const { data: s } = await supabase
+        .from("sales")
+        .select("trans_no,sales_date,cust_no,emp_no")
+        .order("sales_date", { ascending: false })
+        .limit(8);
+      setRecentSales(s ?? []);
     })();
   }, [role]);
 
