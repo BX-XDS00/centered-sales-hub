@@ -29,6 +29,7 @@ function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [loginRole, setLoginRole] = useState<LoginRole>("user");
 
   useEffect(() => {
@@ -53,7 +54,7 @@ function LoginPage() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setLoading(false);
-      return toast.error(error.message);
+      return toast.error("Invalid login credentials. If this account was created with Google, use Continue with Google or reset your password first.");
     }
     if (data.user) {
       const { data: prof } = await supabase.from("profiles").select("blocked").eq("id", data.user.id).maybeSingle();
@@ -72,6 +73,20 @@ function LoginPage() {
     setLoading(false);
     toast.success("Signed in");
     router.navigate({ to: loginRole === "user" ? "/dashboard" : loginRole === "admin" ? "/admin" : "/super-admin" });
+  };
+
+  const onForgotPassword = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) return toast.error("Enter your email first, then request a password reset.");
+
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetLoading(false);
+
+    if (error) return toast.error(error.message);
+    toast.success("Password reset email sent. Open the link to set a password.");
   };
 
   const onGoogle = async () => {
@@ -127,7 +142,9 @@ function LoginPage() {
               <label className="flex items-center gap-2 text-muted-foreground">
                 <Checkbox checked={remember} onCheckedChange={(v) => setRemember(!!v)} /> Remember me
               </label>
-              <button type="button" className="text-muted-foreground hover:text-foreground">Forgot password?</button>
+              <button type="button" onClick={onForgotPassword} disabled={resetLoading} className="text-muted-foreground hover:text-foreground disabled:opacity-60">
+                {resetLoading ? "Sending..." : "Forgot password?"}
+              </button>
             </div>
             <Button type="submit" disabled={loading} className="w-full" size="lg">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Log In

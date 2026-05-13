@@ -32,8 +32,13 @@ function SignupPage() {
       },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Account created. Check your email to confirm.");
+    if (error) {
+      const message = error.message.toLowerCase().includes("already")
+        ? "This email already has an account. Sign in with Google or use Forgot password to set an email password."
+        : error.message;
+      return toast.error(message);
+    }
+    toast.success("Account created. You can now sign in.");
     router.navigate({ to: "/login" });
   };
 
