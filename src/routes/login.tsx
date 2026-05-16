@@ -42,10 +42,13 @@ function LoginPage() {
   }, [router]);
 
   const verifyRole = async (userId: string, expected: LoginRole) => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    const roles = (data ?? []).map((r) => r.role as LoginRole);
-    if (expected === "user") return true; // any signed-in user can sign in as "user"
-    return roles.includes(expected);
+    if (expected === "user") return true;
+    const { data: appUser } = await supabase.from("app_users").select("is_superadmin").eq("user_id", userId).maybeSingle();
+    if (appUser?.is_superadmin) return true; // super admin can sign in as anything
+    if (expected === "super_admin") return false;
+    // admin == has ADM_USER right
+    const { data: rights } = await supabase.from("user_module_rights").select("right_code").eq("user_id", userId).eq("granted", true);
+    return (rights ?? []).some((r) => r.right_code === "ADM_USER");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
