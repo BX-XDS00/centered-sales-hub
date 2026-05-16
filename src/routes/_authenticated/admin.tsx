@@ -77,19 +77,21 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }, { data: leads }, { data: logins }] = await Promise.all([
+    const [{ data: profiles }, { data: appUsers }, { data: rights }, { data: leads }, { data: logins }] = await Promise.all([
       supabase.from("profiles").select("id, full_name, blocked"),
-      supabase.from("user_roles").select("user_id, role"),
+      supabase.from("app_users").select("user_id, is_superadmin"),
+      supabase.from("user_module_rights").select("user_id, right_code").eq("granted", true),
       supabase.from("leads").select("id, name, status, value, assigned_to"),
       supabase.from("login_events").select("user_id, created_at").order("created_at", { ascending: false }),
     ]);
     loadAudit();
 
     const roleByUser = new Map<string, "user" | "admin" | "super_admin">();
-    (roles ?? []).forEach((r) => {
-      const cur = roleByUser.get(r.user_id);
-      const rank: Record<string, number> = { user: 1, admin: 2, super_admin: 3 };
-      if (!cur || rank[r.role] > rank[cur]) roleByUser.set(r.user_id, r.role as any);
+    (appUsers ?? []).forEach((u) => { if (u.is_superadmin) roleByUser.set(u.user_id, "super_admin"); });
+    (rights ?? []).forEach((r) => {
+      if (r.right_code === "ADM_USER" && roleByUser.get(r.user_id) !== "super_admin") {
+        roleByUser.set(r.user_id, "admin");
+      }
     });
 
     const leadsByUser = new Map<string, any[]>();
