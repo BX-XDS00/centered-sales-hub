@@ -49,6 +49,27 @@ export type Database = {
           },
         ]
       }
+      app_users: {
+        Row: {
+          created_at: string
+          email: string
+          is_superadmin: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          is_superadmin?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          is_superadmin?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -79,19 +100,19 @@ export type Database = {
       customer: {
         Row: {
           address: string | null
-          cust_name: string | null
+          cust_name: string
           cust_no: string
           payment_terms: string | null
         }
         Insert: {
           address?: string | null
-          cust_name?: string | null
+          cust_name: string
           cust_no: string
           payment_terms?: string | null
         }
         Update: {
           address?: string | null
-          cust_name?: string | null
+          cust_name?: string
           cust_no?: string
           payment_terms?: string | null
         }
@@ -101,28 +122,28 @@ export type Database = {
         Row: {
           birth_date: string | null
           emp_no: string
-          first_name: string | null
+          first_name: string
           gender: string | null
           hire_date: string | null
-          last_name: string | null
+          last_name: string
           termination_date: string | null
         }
         Insert: {
           birth_date?: string | null
           emp_no: string
-          first_name?: string | null
+          first_name: string
           gender?: string | null
           hire_date?: string | null
-          last_name?: string | null
+          last_name: string
           termination_date?: string | null
         }
         Update: {
           birth_date?: string | null
           emp_no?: string
-          first_name?: string | null
+          first_name?: string
           gender?: string | null
           hire_date?: string | null
-          last_name?: string | null
+          last_name?: string
           termination_date?: string | null
         }
         Relationships: []
@@ -193,6 +214,71 @@ export type Database = {
         }
         Relationships: []
       }
+      modules: {
+        Row: {
+          mod_code: string
+          mod_name: string
+        }
+        Insert: {
+          mod_code: string
+          mod_name: string
+        }
+        Update: {
+          mod_code?: string
+          mod_name?: string
+        }
+        Relationships: []
+      }
+      price_hist: {
+        Row: {
+          effective_date: string
+          id: string
+          prod_no: string
+          unit_price: number
+        }
+        Insert: {
+          effective_date: string
+          id?: string
+          prod_no: string
+          unit_price: number
+        }
+        Update: {
+          effective_date?: string
+          id?: string
+          prod_no?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_hist_prod_no_fkey"
+            columns: ["prod_no"]
+            isOneToOne: false
+            referencedRelation: "product"
+            referencedColumns: ["prod_no"]
+          },
+        ]
+      }
+      product: {
+        Row: {
+          category: string | null
+          prod_name: string
+          prod_no: string
+          unit: string | null
+        }
+        Insert: {
+          category?: string | null
+          prod_name: string
+          prod_no: string
+          unit?: string | null
+        }
+        Update: {
+          category?: string | null
+          prod_name?: string
+          prod_no?: string
+          unit?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -223,65 +309,210 @@ export type Database = {
         }
         Relationships: []
       }
+      rights: {
+        Row: {
+          mod_code: string
+          right_code: string
+          right_name: string
+        }
+        Insert: {
+          mod_code: string
+          right_code: string
+          right_name: string
+        }
+        Update: {
+          mod_code?: string
+          right_code?: string
+          right_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rights_mod_code_fkey"
+            columns: ["mod_code"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["mod_code"]
+          },
+        ]
+      }
       sales: {
         Row: {
+          created_at: string
+          created_by: string | null
           cust_no: string | null
           emp_no: string | null
-          sales_date: string | null
+          record_status: string
+          sales_date: string
           trans_no: string
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
+          created_at?: string
+          created_by?: string | null
           cust_no?: string | null
           emp_no?: string | null
-          sales_date?: string | null
+          record_status?: string
+          sales_date: string
           trans_no: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
+          created_at?: string
+          created_by?: string | null
           cust_no?: string | null
           emp_no?: string | null
-          sales_date?: string | null
+          record_status?: string
+          sales_date?: string
           trans_no?: string
+          updated_at?: string
+          updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_cust_no_fkey"
+            columns: ["cust_no"]
+            isOneToOne: false
+            referencedRelation: "customer"
+            referencedColumns: ["cust_no"]
+          },
+          {
+            foreignKeyName: "sales_emp_no_fkey"
+            columns: ["emp_no"]
+            isOneToOne: false
+            referencedRelation: "employee"
+            referencedColumns: ["emp_no"]
+          },
+        ]
       }
-      user_roles: {
+      sales_detail: {
         Row: {
           created_at: string
+          created_by: string | null
           id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          prod_no: string
+          qty: number
+          record_status: string
+          trans_no: string
+          unit_price: number
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          prod_no: string
+          qty: number
+          record_status?: string
+          trans_no: string
+          unit_price: number
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          prod_no?: string
+          qty?: number
+          record_status?: string
+          trans_no?: string
+          unit_price?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_detail_prod_no_fkey"
+            columns: ["prod_no"]
+            isOneToOne: false
+            referencedRelation: "product"
+            referencedColumns: ["prod_no"]
+          },
+          {
+            foreignKeyName: "sales_detail_trans_no_fkey"
+            columns: ["trans_no"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["trans_no"]
+          },
+        ]
+      }
+      user_module: {
+        Row: {
+          mod_code: string
+          user_id: string
+        }
+        Insert: {
+          mod_code: string
+          user_id: string
+        }
+        Update: {
+          mod_code?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_module_mod_code_fkey"
+            columns: ["mod_code"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["mod_code"]
+          },
+          {
+            foreignKeyName: "user_module_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      user_module_rights: {
+        Row: {
+          granted: boolean
+          right_code: string
+          user_id: string
+        }
+        Insert: {
+          granted?: boolean
+          right_code: string
+          user_id: string
+        }
+        Update: {
+          granted?: boolean
+          right_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_module_rights_right_code_fkey"
+            columns: ["right_code"]
+            isOneToOne: false
+            referencedRelation: "rights"
+            referencedColumns: ["right_code"]
+          },
+          {
+            foreignKeyName: "user_module_rights_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      is_admin_or_super: { Args: { _user_id: string }; Returns: boolean }
+      has_right: { Args: { _right: string; _user: string }; Returns: boolean }
+      is_superadmin: { Args: { _user: string }; Returns: boolean }
     }
     Enums: {
       activity_type: "call" | "email" | "meeting" | "note"
-      app_role: "user" | "admin" | "super_admin"
       lead_status:
         | "new"
         | "contacted"
@@ -419,7 +650,6 @@ export const Constants = {
   public: {
     Enums: {
       activity_type: ["call", "email", "meeting", "note"],
-      app_role: ["user", "admin", "super_admin"],
       lead_status: [
         "new",
         "contacted",
