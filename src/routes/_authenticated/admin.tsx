@@ -77,19 +77,21 @@ function AdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }, { data: leads }, { data: logins }] = await Promise.all([
+    const [{ data: profiles }, { data: appUsers }, { data: rights }, { data: leads }, { data: logins }] = await Promise.all([
       supabase.from("profiles").select("id, full_name, blocked"),
-      supabase.from("user_roles").select("user_id, role"),
+      supabase.from("app_users").select("user_id, is_superadmin"),
+      supabase.from("user_module_rights").select("user_id, right_code").eq("granted", true),
       supabase.from("leads").select("id, name, status, value, assigned_to"),
       supabase.from("login_events").select("user_id, created_at").order("created_at", { ascending: false }),
     ]);
     loadAudit();
 
     const roleByUser = new Map<string, "user" | "admin" | "super_admin">();
-    (roles ?? []).forEach((r) => {
-      const cur = roleByUser.get(r.user_id);
-      const rank: Record<string, number> = { user: 1, admin: 2, super_admin: 3 };
-      if (!cur || rank[r.role] > rank[cur]) roleByUser.set(r.user_id, r.role as any);
+    (appUsers ?? []).forEach((u) => { if (u.is_superadmin) roleByUser.set(u.user_id, "super_admin"); });
+    (rights ?? []).forEach((r) => {
+      if (r.right_code === "ADM_USER" && roleByUser.get(r.user_id) !== "super_admin") {
+        roleByUser.set(r.user_id, "admin");
+      }
     });
 
     const leadsByUser = new Map<string, any[]>();
@@ -137,9 +139,19 @@ function AdminPage() {
     }
     if (newRole === "super_admin") return toast.error("Super Admin role can't be assigned here.");
     const previous = target.role;
-    await supabase.from("user_roles").delete().eq("user_id", target.id);
-    const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: newRole as any });
-    if (error) return toast.error(error.message);
+    if (newRole === "admin") {
+      const { error } = await supabase
+        .from("user_module_rights")
+        .upsert({ user_id: target.id, right_code: "ADM_USER", granted: true });
+      if (error) return toast.error(error.message);
+    } else {
+      const { error } = await supabase
+        .from("user_module_rights")
+        .delete()
+        .eq("user_id", target.id)
+        .eq("right_code", "ADM_USER");
+      if (error) return toast.error(error.message);
+    }
     await recordAudit(target, "role_change", { from: previous, to: newRole });
     toast.success("Role updated");
     load();
@@ -148,8 +160,11 @@ function AdminPage() {
   const removeAdmin = async (target: TeamMember) => {
     if (!isSuper) return toast.error("Only Super Admins can remove an admin.");
     if (target.role !== "admin") return;
-    await supabase.from("user_roles").delete().eq("user_id", target.id);
-    const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: "user" as any });
+    const { error } = await supabase
+      .from("user_module_rights")
+      .delete()
+      .eq("user_id", target.id)
+      .eq("right_code", "ADM_USER");
     if (error) return toast.error(error.message);
     await recordAudit(target, "admin_removed", { from: "admin", to: "user" });
     toast.success("Admin removed");

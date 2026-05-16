@@ -22,15 +22,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchRole = async (uid: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", uid);
-    if (!data || data.length === 0) return setRole("user");
-    const roles = data.map((r) => r.role as AppRole);
-    if (roles.includes("super_admin")) setRole("super_admin");
-    else if (roles.includes("admin")) setRole("admin");
-    else setRole("user");
+    const [{ data: appUser }, { data: rights }] = await Promise.all([
+      supabase.from("app_users").select("is_superadmin").eq("user_id", uid).maybeSingle(),
+      supabase.from("user_module_rights").select("right_code").eq("user_id", uid).eq("granted", true),
+    ]);
+    if (appUser?.is_superadmin) return setRole("super_admin");
+    const codes = (rights ?? []).map((r) => r.right_code);
+    if (codes.includes("ADM_USER")) return setRole("admin");
+    setRole("user");
   };
 
   useEffect(() => {
