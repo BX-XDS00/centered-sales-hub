@@ -25,14 +25,27 @@ interface Lead {
 
 function Dashboard() {
   const { role, user } = useAuth();
-  const SAMPLE_LEADS: Lead[] = [
-    { id: "s1", name: "Amelia Chen", company: "Northwind Trading", status: "qualified", value: 12400, assigned_to: null, updated_at: "2026-05-15T10:00:00Z" },
-    { id: "s2", name: "Marcus Rivera", company: "Helix Robotics", status: "proposal", value: 38900, assigned_to: null, updated_at: "2026-05-14T15:20:00Z" },
-    { id: "s3", name: "Priya Natarajan", company: "Lumen Health", status: "new", value: 5600, assigned_to: null, updated_at: "2026-05-13T09:45:00Z" },
-    { id: "s4", name: "Jonas Weber", company: "Atlas Freight", status: "won", value: 72500, assigned_to: null, updated_at: "2026-05-12T18:10:00Z" },
-    { id: "s5", name: "Sofia Almeida", company: "Brightlane Studio", status: "contacted", value: 8200, assigned_to: null, updated_at: "2026-05-11T12:30:00Z" },
-    { id: "s6", name: "Daniel Okafor", company: "Vertex Analytics", status: "negotiation", value: 45100, assigned_to: null, updated_at: "2026-05-10T08:00:00Z" },
-  ];
+  const SAMPLE_LEADS: Lead[] = useMemo(() => {
+    const firstNames = ["Amelia", "Marcus", "Priya", "Jonas", "Sofia", "Daniel", "Hiroshi", "Lena", "Tomas", "Aisha", "Ravi", "Clara", "Mateo", "Yuki", "Noah", "Zara", "Felix", "Ines", "Owen", "Maya"];
+    const lastNames = ["Chen", "Rivera", "Natarajan", "Weber", "Almeida", "Okafor", "Tanaka", "Petrov", "Costa", "Khan", "Singh", "Dubois", "Romero", "Sato", "Bennett", "Hassan", "Muller", "Silva", "Walsh", "Lopez"];
+    const companies = ["Northwind Trading", "Helix Robotics", "Lumen Health", "Atlas Freight", "Brightlane Studio", "Vertex Analytics", "Kestrel Labs", "Orbital Foods", "Pinecone Media", "Riverstone Capital", "Quanta Energy", "Cobalt Works"];
+    const statuses = ["new", "contacted", "qualified", "proposal", "negotiation", "won"];
+    const rand = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+    return Array.from({ length: 6 }).map((_, i) => {
+      const daysAgo = Math.floor(Math.random() * 30);
+      const hoursAgo = Math.floor(Math.random() * 24);
+      const d = new Date(Date.now() - daysAgo * 86400000 - hoursAgo * 3600000);
+      return {
+        id: `s${i}-${Math.random().toString(36).slice(2, 8)}`,
+        name: `${rand(firstNames)} ${rand(lastNames)}`,
+        company: rand(companies),
+        status: rand(statuses),
+        value: Math.floor(1000 + Math.random() * 99000),
+        assigned_to: null,
+        updated_at: d.toISOString(),
+      };
+    }).sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+  }, []);
 
   const [leads, setLeads] = useState<Lead[]>(SAMPLE_LEADS);
   const [activitiesCount, setActivitiesCount] = useState(0);
