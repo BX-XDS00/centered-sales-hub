@@ -438,6 +438,13 @@ export type Database = {
             referencedRelation: "sales"
             referencedColumns: ["trans_no"]
           },
+          {
+            foreignKeyName: "sales_detail_trans_no_fkey"
+            columns: ["trans_no"]
+            isOneToOne: false
+            referencedRelation: "sales_with_lookup"
+            referencedColumns: ["trans_no"]
+          },
         ]
       }
       user_module: {
@@ -505,7 +512,85 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      sales_with_lookup: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          cust_address: string | null
+          cust_name: string | null
+          cust_no: string | null
+          emp_first_name: string | null
+          emp_last_name: string | null
+          emp_no: string | null
+          line_count: number | null
+          payment_terms: string | null
+          record_status: string | null
+          sales_date: string | null
+          total_amount: number | null
+          trans_no: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_cust_no_fkey"
+            columns: ["cust_no"]
+            isOneToOne: false
+            referencedRelation: "customer"
+            referencedColumns: ["cust_no"]
+          },
+          {
+            foreignKeyName: "sales_emp_no_fkey"
+            columns: ["emp_no"]
+            isOneToOne: false
+            referencedRelation: "employee"
+            referencedColumns: ["emp_no"]
+          },
+        ]
+      }
+      salesdetail_with_product: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          current_price_date: string | null
+          current_unit_price: number | null
+          id: string | null
+          line_total: number | null
+          prod_name: string | null
+          prod_no: string | null
+          qty: number | null
+          record_status: string | null
+          trans_no: string | null
+          unit: string | null
+          unit_price: number | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_detail_prod_no_fkey"
+            columns: ["prod_no"]
+            isOneToOne: false
+            referencedRelation: "product"
+            referencedColumns: ["prod_no"]
+          },
+          {
+            foreignKeyName: "sales_detail_trans_no_fkey"
+            columns: ["trans_no"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["trans_no"]
+          },
+          {
+            foreignKeyName: "sales_detail_trans_no_fkey"
+            columns: ["trans_no"]
+            isOneToOne: false
+            referencedRelation: "sales_with_lookup"
+            referencedColumns: ["trans_no"]
+          },
+        ]
+      }
     }
     Functions: {
       has_right: { Args: { _right: string; _user: string }; Returns: boolean }
