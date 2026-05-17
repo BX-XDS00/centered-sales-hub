@@ -133,30 +133,6 @@ function Dashboard() {
         </Card>
       </section>
 
-      <section className="mx-auto max-w-4xl">
-        <Card className="border-border/70 shadow-[var(--shadow-card)]">
-          <CardHeader>
-            <CardTitle className="font-display">Recent sales ({salesCount.toLocaleString()})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentSales.length === 0 ? (
-              <EmptyState icon={<DollarSign className="h-7 w-7" />} title="No sales yet" description="Sales transactions will appear here." />
-            ) : (
-              <ul className="divide-y divide-border">
-                {recentSales.map((s) => (
-                  <li key={s.trans_no} className="flex items-center justify-between py-2 text-sm">
-                    <span className="font-mono">{s.trans_no}</span>
-                    <span className="text-muted-foreground">{s.sales_date ?? "—"}</span>
-                    <span>Cust {s.cust_no ?? "—"}</span>
-                    <span className="text-muted-foreground">Emp {s.emp_no ?? "—"}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
       {!isManager && (
         <p className="text-center text-xs text-muted-foreground">
           <CheckCircle2 className="mr-1 inline h-3 w-3 text-success" /> You see only the leads assigned to you.
