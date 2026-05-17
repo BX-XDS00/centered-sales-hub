@@ -25,30 +25,29 @@ interface Lead {
 
 function Dashboard() {
   const { role, user } = useAuth();
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const SAMPLE_LEADS: Lead[] = [
+    { id: "s1", name: "Amelia Chen", company: "Northwind Trading", status: "qualified", value: 12400, assigned_to: null, updated_at: "2026-05-15T10:00:00Z" },
+    { id: "s2", name: "Marcus Rivera", company: "Helix Robotics", status: "proposal", value: 38900, assigned_to: null, updated_at: "2026-05-14T15:20:00Z" },
+    { id: "s3", name: "Priya Natarajan", company: "Lumen Health", status: "new", value: 5600, assigned_to: null, updated_at: "2026-05-13T09:45:00Z" },
+    { id: "s4", name: "Jonas Weber", company: "Atlas Freight", status: "won", value: 72500, assigned_to: null, updated_at: "2026-05-12T18:10:00Z" },
+    { id: "s5", name: "Sofia Almeida", company: "Brightlane Studio", status: "contacted", value: 8200, assigned_to: null, updated_at: "2026-05-11T12:30:00Z" },
+    { id: "s6", name: "Daniel Okafor", company: "Vertex Analytics", status: "negotiation", value: 45100, assigned_to: null, updated_at: "2026-05-10T08:00:00Z" },
+  ];
+
+  const [leads, setLeads] = useState<Lead[]>(SAMPLE_LEADS);
   const [activitiesCount, setActivitiesCount] = useState(0);
   const [usersCount, setUsersCount] = useState(0);
-  const [salesCount, setSalesCount] = useState(0);
-  const [recentSales, setRecentSales] = useState<Array<{ trans_no: string; sales_date: string | null; cust_no: string | null; emp_no: string | null }>>([]);
 
   useEffect(() => {
     (async () => {
       const { data: l } = await supabase.from("leads").select("*").order("updated_at", { ascending: false });
-      setLeads(l ?? []);
+      if (l && l.length > 0) setLeads(l);
       const { count: a } = await supabase.from("activities").select("*", { count: "exact", head: true });
       setActivitiesCount(a ?? 0);
       if (role === "admin" || role === "super_admin") {
         const { count: u } = await supabase.from("profiles").select("*", { count: "exact", head: true });
         setUsersCount(u ?? 0);
       }
-      const { count: sc } = await supabase.from("sales").select("*", { count: "exact", head: true });
-      setSalesCount(sc ?? 0);
-      const { data: s } = await supabase
-        .from("sales")
-        .select("trans_no,sales_date,cust_no,emp_no")
-        .order("sales_date", { ascending: false })
-        .limit(8);
-      setRecentSales(s ?? []);
     })();
   }, [role]);
 
